@@ -3,5 +3,5 @@ venv /
 venv
 
 .env
-
+logs /
 networksecurity.zip
