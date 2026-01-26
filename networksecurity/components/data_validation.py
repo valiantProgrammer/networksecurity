@@ -60,7 +60,7 @@ class DataValidation:
                 
             drift_report_file_path=self.data_validation_config.drift_report_file_path
             
-            dir_path=os.path.join(drift_report_file_path)
+            dir_path=os.path.dirname(drift_report_file_path)
             os.makedirs(dir_path,exist_ok=True)
             write_yaml_file(file_path=drift_report_file_path, content=report)
             return status
@@ -85,7 +85,7 @@ class DataValidation:
             
             validation_status = self.detect_dataset_drift(base_df=train_df,current_df=test_df)
             dir_path=os.path.dirname(self.data_validation_config.valid_train_file_path)
-            os.mkdir(dir_path,exist_ok=True)
+            os.makedirs(dir_path,exist_ok=True)
             
             train_df.to_csv(self.data_validation_config.valid_train_file_path, index=False, header=True)
             test_df.to_csv(self.data_validation_config.valid_test_file_path, index=False, header=True)
