@@ -4,7 +4,7 @@ from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
 from networksecurity.entity.artifact_entity import DataTransformationArtifact, ModelTrainerArtifact
 from networksecurity.entity.config_entity import ModelTrainerConfig
-
+import mlflow
 from networksecurity.utils.ml_utils.model.estimator import NetworkModel
 from networksecurity.utils.main_utils.utils import save_object, load_object, load_numpy_array_data
 from networksecurity.utils.ml_utils.metric.classification_metric import get_classification_score
@@ -29,7 +29,18 @@ class ModelTrainer:
             self.data_transformation_artifact = data_transformation_artifact
         except Exception as e:
             raise NetworkSecurityException(e,sys)
-       
+    
+        def tract_mlflow(self, best_model, classification_train_metric):
+            with mlflow.start_run():
+                f1_score = classification_train_metric.f1_score
+                precision_score = classification_train_metric.precision_score
+                recall_score = classification_train_metric.recall_score
+                
+                mlflow.log_metric("f1_score", f1_score)
+                mlflow.log_metric("precision_score", precision_score)
+                mlflow.log_metric("recall_score", recall_score)
+                mlflow.sklearn.log_model(best_model, "model")
+        
     
     def train_model(self,X_train,y_train, X_test, y_test):
         models = {
@@ -43,38 +54,37 @@ class ModelTrainer:
         params = {
             "Random Forest": {
                 "n_estimators": [100, 200, 300],
-                "max_depth": [10, 20, 30, None],
+                # "max_depth": [10, 20, 30, None],
                 "min_samples_split": [2, 5, 10],
-                "min_samples_leaf": [1, 2, 4],
+                # "min_samples_leaf": [1, 2, 4],
                 "max_features": ["sqrt", "log2"]
             },
             "Decision Tree": {
                 "max_depth": [5, 10, 20, 30, None],
-                "min_samples_split": [2, 5, 10, 20],
-                "min_samples_leaf": [1, 2, 4, 8],
-                "criterion": ["gini", "entropy"]
+                # "min_samples_split": [2, 5, 10, 20],
+                # "min_samples_leaf": [1, 2, 4, 8],
+                # "criterion": ["gini", "entropy"]
             },
             "Gradient Boosting": {
                 "n_estimators": [100, 200, 300],
                 "learning_rate": [0.01, 0.05, 0.1],
-                "max_depth": [3, 5, 7, 10],
-                "min_samples_split": [2, 5, 10],
+                # "max_depth": [3, 5, 7, 10],
+                # "min_samples_split": [2, 5, 10],
                 "subsample": [0.8, 0.9, 1.0]
             },
             "Logistic Regression": {
                 "C": [0.001, 0.01, 0.1, 1, 10],
-                "penalty": ["l2"],
-                "solver": ["lbfgs", "liblinear"]
+                # "penalty": ["l2"],
+                # "solver": ["lbfgs", "liblinear"]
             },
             "KNN": {
                 "n_neighbors": [3, 5, 7, 9, 11],
-                "weights": ["uniform", "distance"],
-                "metric": ["euclidean", "manhattan"]
+                # "weights": ["uniform", "distance"],
+                # "metric": ["euclidean", "manhattan"]
             },
             "Adaboost": {
                 "n_estimators": [50, 100, 200],
-                "learning_rate": [0.5, 1.0, 1.5],
-                "algorithm": ["SAMME", "SAMME.R"]
+                "learning_rate": [0.5, 1.0, 1.5]
             }
         }
         
@@ -88,7 +98,9 @@ class ModelTrainer:
             y_test_pred = best_model.predict(X_test)
             
             classification_train_metric = get_classification_score(y_true=y_train, y_pred=y_train_pred)
+            self.track_mlflow(best_model, classification_train_metric)
             classification_test_metric = get_classification_score(y_true=y_test, y_pred=y_test_pred)
+            self.track_mlflow(best_model, classification_test_metric)
             
             preprocessor = load_object(file_path=self.data_transformation_artifact.transformed_object_file_path)
             model_dir_path = os.path.dirname(self.model_trainer_config.trained_model_file_path)
