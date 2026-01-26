@@ -17,8 +17,9 @@ if __name__=="__main__":
         data_validation_config=DataValidationConfig(training_pipeline_config)
         data_validation=DataValidation(dataingestionartifact,data_validation_config)
         logging.info("Initiate the data Validation")
-        data_validation.initiate_data_validation()
+        data_validation_artifact = data_validation.initiate_data_validation()
         logging.info("Data Validation Completed")
+        print(data_validation_artifact)
         
     except Exception as e:
         raise NetworkSecurityException(e,sys)
