@@ -12,7 +12,7 @@ import pandas as pd
 import pymongo
 from typing import List
 from sklearn.model_selection import train_test_split
-
+from networksecurity.entity.artifact_entity import DataIngestionArtifact
 from dotenv import load_dotenv
 load_dotenv()
 MONGODB_URL=os.getenv("MONGODB_URL")
@@ -59,7 +59,7 @@ class DataIngestion:
     def split_data_in_test_train(self,dataframe:pd.DataFrame):
         try:
             train_set,test_set = train_test_split(
-                dataframe,test_size=self.data_ingestion_config.train_test_split_ratio,random_state=42
+                dataframe,test_size=self.data_ingestion_config.train_test_split_ratio[0],random_state=42
             )
             logging.info("Performed train test split on the dataframe")
             logging.info("Exited split_data_in_test_train method of Data_Ingestion class")
@@ -85,7 +85,11 @@ class DataIngestion:
     def initiate_data_ingestion(self):
         try:
             dataframe=self.export_collection_name()
-            dataframe=self.export_data_to_feature_store()
-            self.split_data_in_test_train(dataframe)
+            dataframe=self.export_data_to_feature_store(dataframe=dataframe)
+            self.split_data_in_test_train(dataframe=dataframe)
+            data_ingestion_artifact=DataIngestionArtifact(trained_file_path=self.data_ingestion_config.training_file_path,
+                                                            test_file_path=self.data_ingestion_config.testing_file_path    )
+            
+        
         except Exception as e:
             raise NetworkSecurityException(e,sys)

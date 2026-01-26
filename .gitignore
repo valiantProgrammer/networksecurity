@@ -5,3 +5,7 @@ venv
 .env
 logs /
 networksecurity.zip
+
+__pycache__/
+
+logs/
