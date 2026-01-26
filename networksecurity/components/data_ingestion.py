@@ -87,9 +87,9 @@ class DataIngestion:
             dataframe=self.export_collection_name()
             dataframe=self.export_data_to_feature_store(dataframe=dataframe)
             self.split_data_in_test_train(dataframe=dataframe)
-            data_ingestion_artifact=DataIngestionArtifact(trained_file_path=self.data_ingestion_config.training_file_path,
+            data_ingestion_artifact=DataIngestionArtifact(train_file_path=self.data_ingestion_config.training_file_path,
                                                             test_file_path=self.data_ingestion_config.testing_file_path    )
-            
+            return data_ingestion_artifact
         
         except Exception as e:
             raise NetworkSecurityException(e,sys)
