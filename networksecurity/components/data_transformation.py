@@ -30,7 +30,7 @@ class DataTransformation:
         except Exception as e:
             raise NetworkSecurityException(e,sys)
     @staticmethod
-    def read_data(file_path: str) -> pd.Dataframe:
+    def read_data(file_path: str) -> pd.DataFrame:
         try:
             return pd.read_csv(file_path)
         except Exception as e:
