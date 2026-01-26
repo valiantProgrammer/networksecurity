@@ -30,16 +30,16 @@ class ModelTrainer:
         except Exception as e:
             raise NetworkSecurityException(e,sys)
     
-        def tract_mlflow(self, best_model, classification_train_metric):
-            with mlflow.start_run():
-                f1_score = classification_train_metric.f1_score
-                precision_score = classification_train_metric.precision_score
-                recall_score = classification_train_metric.recall_score
-                
-                mlflow.log_metric("f1_score", f1_score)
-                mlflow.log_metric("precision_score", precision_score)
-                mlflow.log_metric("recall_score", recall_score)
-                mlflow.sklearn.log_model(best_model, "model")
+    def track_mlflow(self, best_model, classification_train_metric):
+        with mlflow.start_run():
+            f1_score = classification_train_metric.f1_score
+            precision_score = classification_train_metric.precision_score
+            recall_score = classification_train_metric.recall_score
+            
+            mlflow.log_metric("f1_score", f1_score)
+            mlflow.log_metric("precision_score", precision_score)
+            mlflow.log_metric("recall_score", recall_score)
+            mlflow.sklearn.log_model(best_model, "model")
         
     
     def train_model(self,X_train,y_train, X_test, y_test):
