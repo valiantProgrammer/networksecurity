@@ -3,6 +3,7 @@ from networksecurity.entity.config_entity import DataValidationConfig
 from networksecurity.constant.training_pipeline import SCHEMA_FILE_PATH
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
+from networksecurity.utils.main_utils.utils import read_yaml_file
 from scipy.stats import ks_2samp
 import pandas as pd
 import os,sys
@@ -11,7 +12,77 @@ class DataValidation:
     def __init__(self,data_ingestion_artifact:DataIngestionArtifact,data_validation_config:DataValidationConfig):
         try:
             self.data_ingestion_artifact=data_ingestion_artifact
-            self.data_validation=data_validation_config
+            self.data_validation_config=data_validation_config
             self._schema_config = read_yaml_file(SCHEMA_FILE_PATH)
+        except Exception as e:
+            raise NetworkSecurityException(e,sys)
+        
+    @staticmethod
+    def read_data(file_path):
+        try:
+            return pd.read_csv(file_path)
+        except Exception as e:
+            raise NetworkSecurityException(e,sys)
+    
+    
+    
+    def validate_number_of_columns(self,dataframe: pd.DataFrame)->bool:
+        try:
+            number_of_columns=len(self._schema_config)
+            logging.info(f"Required number of coulumns {number_of_columns}")
+            logging.info(f"Number of coulumns In data {len(dataframe.columns)}")
+            if len(dataframe.columns)==number_of_columns:
+                return True
+            return False
+            
+        except Exception as e:
+            raise NetworkSecurityException(e,sys)
+        
+      
+    def detect_dataset_drift(self,base_df:pd.DataFrame,current_df:pd.DataFrame,threshold=0.05) -> bool:  
+        try:
+            status=True
+            report = {}
+            for col in base_df.columns:
+                d1 = base_df[col]
+                d2 = current_df[col]
+                is_sample_dist = ks_2samp(d1,d2)
+                if threshold > is_sample_dist.pvalue:
+                    is_found = True
+                    status = False
+                else:
+                    is_found = False
+                    status = True   
+                report.update({col:{
+                    "p_value" : float(is_sample_dist.pvalue),
+                    "drift_status": is_found
+                }})
+                
+            drift_report_file_path=self.data_validation_config.drift_report_file_path
+            
+            dir_path=os.path.join(drift_report_file_path)
+            os.makedirs(dir_path,exist_ok=True)
+            return status
+        except Exception as e:
+            raise NetworkSecurityException(e,sys)
+        
+    def initiate_data_validation(self,) -> DataValidationArtifact:
+        try:
+            train_file_path=self.data_ingestion_artifact.trained_file_path
+            test_file_path=self.data_ingestion_artifact.test_file_path
+            
+            train_df=DataValidation.read_data(train_file_path)
+            test_df=DataValidation.read_data(test_file_path)
+            
+            error_message = ""
+            status_train = self.validate_number_of_columns(dataframe=train_df)
+            if not status_train:
+                error_message = f"{error_message} Train dataframe does not contain all columns. \n"
+            status_test=self.validate_number_of_columns(dataframe=test_df)
+            if not status_test:
+                error_message = f"{error_message} Test dataframe does not contain all columns. \n"
+            
+            validation_status = status_train and status_test
+            return DataValidationArtifact(validation_status=validation_status, message=error_message)
         except Exception as e:
             raise NetworkSecurityException(e,sys)
