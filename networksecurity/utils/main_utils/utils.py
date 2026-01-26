@@ -54,3 +54,15 @@ def save_object(file_path:str, obj:object)->None:
         
     except Exception as e:
         raise NetworkSecurityException(e,sys)
+    
+def load_object(file_path:str)-> object:
+    try:
+        logging.info("Enter the load_object method of MainUtils class")
+        if not os.path.exists(file_path):
+            raise Exception(f"The file : {file_path} is not exists")
+        with open(file_path, "rb") as file_object:
+            print(file_object)
+            logging.info("Exiting the Load Object method")
+            return pickle.load(file_object)
+    except Exception as e:
+        raise NetworkSecurityException(e,sys)
