@@ -17,5 +17,9 @@ from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
 from networksecurity.utils.main_utils.utils import save_numpy_array_data, save_object
 
-
-
+class DataTransformation:
+    def __init__(self, data_validation_artifact:DataValidationArtifact):
+        try:
+            self.data_validation_artifact=data_validation_artifact
+        except Exception as e:
+            raise NetworkSecurityException(e,sys)
