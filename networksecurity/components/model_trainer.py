@@ -95,6 +95,7 @@ class ModelTrainer:
             best_model_score = max(sorted(model_report.values()))
             best_model_name = list(model_report.keys())[list(model_report.values()).index(best_model_score)]
             best_model = models[best_model_name]
+            print(f"The Best Model is found out to be : {best_model_name}")
             best_model.fit(X_train,y_train)
             y_train_pred = best_model.predict(X_train)
             y_test_pred = best_model.predict(X_test)
@@ -109,6 +110,8 @@ class ModelTrainer:
             os.makedirs(model_dir_path, exist_ok=True)
             network_model=NetworkModel(preprocessor=preprocessor, model=best_model)
             save_object(self.model_trainer_config.trained_model_file_path, obj=NetworkModel)
+            
+            save_object("final_model/model.pkl", best_model)
             
             return (ModelTrainerArtifact(trained_model_file_path=self.model_trainer_config.trained_model_file_path ,test_metric_artifact=classification_test_metric, train_metric_artifact=classification_train_metric))
         
