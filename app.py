@@ -11,3 +11,34 @@ import pymongo
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
 from networksecurity.pipeline.training_pipeline import TrainingPipeline
+
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, File, UploadFile, Request
+from uvicorn import run as app_run
+from fastapi.responses import Response
+from starlette.responses import RedirectResponse
+import pandas as pd
+
+
+from networksecurity.utils.main_utils.utils import load_object
+
+
+client = pymongo.MongoClient(mongo_db_url, tlsCAFile=ca)
+
+database = client[DATA_INGESTION_DATABASE_NAME]
+collection = database[DATA_INGESTION_COLLECTION_NAME]
+
+app = FastAPI()
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_header=["*"],
+)
+
+@app.get("/", tags=["authentication"])
+async def index():
+    return RedirectResponse(url="/docs")
