@@ -42,3 +42,12 @@ app.add_middleware(
 @app.get("/", tags=["authentication"])
 async def index():
     return RedirectResponse(url="/docs")
+
+@app.get("/train")
+async def train_model():
+    try:
+        train_pipeline=TrainingPipeline()
+        train_pipeline.run_pipeline()
+        return Response("Training is successfull")
+    except Exception as e:
+        raise NetworkSecurityException(e, sys)
