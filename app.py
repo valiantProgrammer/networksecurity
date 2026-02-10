@@ -35,10 +35,10 @@ origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin=origins,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_header=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/", tags=["authentication"])
@@ -53,3 +53,6 @@ async def train_model():
         return Response("Training is successfull")
     except Exception as e:
         raise NetworkSecurityException(e, sys)
+    
+if __name__ == "__main__":
+    app_run(app, host="localhost", port=8000)
