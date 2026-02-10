@@ -55,10 +55,14 @@ async def train_model():
     except Exception as e:
         raise NetworkSecurityException(e, sys)
 
-@app.get("predict")
+@app.post("/predict")
 async def predict_route(request: Request, file:UploadFile=File(...)):
     try:
         df=pd.read_csv(file.file)
+        # Drop target column if it exists (feature names should match training data)
+        if 'Result' in df.columns:
+            df = df.drop(columns=['Result'])
+        
         preprocessor=load_object("final_model/preprocessor.pkl")
         final_model=load_object("final_model/model.pkl")
         network_model = NetworkModel(preprocessor=preprocessor,model=final_model)
