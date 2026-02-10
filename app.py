@@ -25,6 +25,8 @@ from networksecurity.utils.main_utils.utils import load_object
 
 client = pymongo.MongoClient(mongo_db_url, tlsCAFile=ca)
 
+from networksecurity.constant.training_pipeline import DATA_INGESTION_COLLECTION_NAME, DATA_INGESTION_DATABASE_NAME
+
 database = client[DATA_INGESTION_DATABASE_NAME]
 collection = database[DATA_INGESTION_COLLECTION_NAME]
 
